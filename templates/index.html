@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<a href="{{ url_for('add_task') }}">➕ Add New Task</a>
+
+<table border="1" cellpadding="8" cellspacing="0">
+    <tr>
+        <th>Title</th>
+        <th>Priority</th>
+        <th>Due Date</th>
+        <th>Status</th>
+        <th>Actions</th>
+    </tr>
+
+    {% for task in tasks %}
+    <tr>
+        <td>{{ task['title'] }}</td>
+        <td>{{ task['priority'] }}</td>
+        <td>{{ task['due_date'] }}</td>
+        <td>{{ task['status'] }}</td>
+        <td>
+            <a href="{{ url_for('edit_task', task_id=task['id']) }}">Edit</a> |
+            <a href="{{ url_for('delete_task', task_id=task['id']) }}">Delete</a>
+        </td>
+    </tr>
+    {% endfor %}
+
+</table>
+
+{% endblock %}
