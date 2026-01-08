@@ -1,53 +1,40 @@
-from database import get_db_connection
+from extensions import db
 
+class Task(db.Model):
+    __tablename__ = 'tasks'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255), nullable=False)
+    description = db.Column(db.Text)
+    priority = db.Column(db.String(50), nullable=False)
+    due_date = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(50), nullable=False)
+
+    def __getitem__(self, item):
+        return getattr(self, item)
 
 def get_all_tasks():
-    connection = get_db_connection()
-    tasks = connection.execute("SELECT * FROM tasks").fetchall()
-    connection.close()
-    return tasks
-
+    return Task.query.all()
 
 def get_task_by_id(task_id):
-    connection = get_db_connection()
-    task = connection.execute(
-        "SELECT * FROM tasks WHERE id = ?", (task_id,)
-    ).fetchone()
-    connection.close()
-    return task
-
+    return Task.query.get(task_id)
 
 def create_task(title, description, priority, due_date):
-    connection = get_db_connection()
-    connection.execute(
-        """
-        INSERT INTO tasks (title, description, priority, due_date, status)
-        VALUES (?, ?, ?, ?, ?)
-        """,
-        (title, description, priority, due_date, "Pending"),
-    )
-    connection.commit()
-    connection.close()
-
+    new_task = Task(title=title, description=description, priority=priority, due_date=due_date, status="Pending")
+    db.session.add(new_task)
+    db.session.commit()
 
 def update_task(task_id, title, description, priority, due_date, status):
-    connection = get_db_connection()
-    connection.execute(
-        """
-        UPDATE tasks
-        SET title = ?, description = ?, priority = ?, due_date = ?, status = ?
-        WHERE id = ?
-        """,
-        (title, description, priority, due_date, status, task_id),
-    )
-    connection.commit()
-    connection.close()
-
+    task = Task.query.get(task_id)
+    if task:
+        task.title = title
+        task.description = description
+        task.priority = priority
+        task.due_date = due_date
+        task.status = status
+        db.session.commit()
 
 def delete_task(task_id):
-    connection = get_db_connection()
-    connection.execute(
-        "DELETE FROM tasks WHERE id = ?", (task_id,)
-    )
-    connection.commit()
-    connection.close()
+    task = Task.query.get(task_id)
+    if task:
+        db.session.delete(task)
+        db.session.commit()

@@ -1,8 +1,23 @@
+import os
 from flask import Flask, render_template, request, redirect, url_for
-from database import init_db
+from extensions import db
 import models
 
 app = Flask(__name__)
+
+# Database Configuration
+database_url = os.environ.get("DATABASE_URL")
+if database_url and database_url.startswith("postgres://"):
+    database_url = database_url.replace("postgres://", "postgresql://", 1)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = database_url or "sqlite:///taskflow.db"
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+db.init_app(app)
+
+# Ensure tables exist
+with app.app_context():
+    db.create_all()
 
 
 @app.route("/")
@@ -49,5 +64,4 @@ def delete_task(task_id):
 
 
 if __name__ == "__main__":
-    init_db()
     app.run(debug=True)
